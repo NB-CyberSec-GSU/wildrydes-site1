@@ -25,9 +25,9 @@ const client = new DynamoDBClient({});
 const ddb = DynamoDBDocumentClient.from(client);
 
 const fleet = [
-    { Name: 'Angel', Color: 'White', Gender: 'Female' },
-    { Name: 'Gil', Color: 'White', Gender: 'Male' },
-    { Name: 'Rocinante', Color: 'Yellow', Gender: 'Female' },
+    { Name: 'Michael', Color: 'White'},
+    { Name: 'Gil', Color: 'White'},
+    { Name: 'Rocinante', Color: 'Yellow'},
 ];
 
 export const handler = async (event, context) => {
@@ -35,24 +35,24 @@ export const handler = async (event, context) => {
         return errorResponse('Authorization not configured', context.awsRequestId);
     }
 
-    const rideId = toUrlString(randomBytes(16));
-    console.log('Received event (', rideId, '): ', event);
+    const flightId = toUrlString(randomBytes(16));
+    console.log('Received event (', flightId, '): ', event);
 
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const requestBody = JSON.parse(event.body);
     const pickupLocation = requestBody.PickupLocation;
 
-    const unicorn = findUnicorn(pickupLocation);
+    const drone = findUnicorn(pickupLocation);
 
     try {
-        await recordRide(rideId, username, unicorn);
+        await recordFlight(flightId, username, drone);
         return {
             statusCode: 201,
             body: JSON.stringify({
-                RideId: rideId,
-                Unicorn: unicorn,
+                FlightId: flightId,
+                Drone: drone,
                 Eta: '30 seconds',
-                Rider: username,
+                User: username,
             }),
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -64,18 +64,18 @@ export const handler = async (event, context) => {
     }
 };
 
-function findUnicorn(pickupLocation) {
-    console.log('Finding unicorn for ', pickupLocation.Latitude, ', ', pickupLocation.Longitude);
+function findDrone(pickupLocation) {
+    console.log('Finding drone for ', pickupLocation.Latitude, ', ', pickupLocation.Longitude);
     return fleet[Math.floor(Math.random() * fleet.length)];
 }
 
-async function recordRide(rideId, username, unicorn) {
+async function recordRide(flightId, username, drone) {
     const params = {
-        TableName: 'Rides',
+        TableName: 'Flights',
         Item: {
-            RideId: rideId,
+            FlightId: flightId,
             User: username,
-            Unicorn: unicorn,
+            Drone: drone,
             RequestTime: new Date().toISOString(),
         },
     };
@@ -108,7 +108,7 @@ Here is the code used to test the Lambda function:
 
 ```json
 {
-    "path": "/ride",
+    "path": "/flight",
     "httpMethod": "POST",
     "headers": {
         "Accept": "*/*",
