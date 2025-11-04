@@ -1,7 +1,7 @@
-/*global WildRydes _config*/
+/*global GDronez _config*/
 
-var WildRydes = window.WildRydes || {};
-WildRydes.map = WildRydes.map || {};
+var GDronez = window.GDronez || {};
+GDronez.map = GDronez.map || {};
 
 (function esriMapScopeWrapper($) {
     require([
@@ -18,7 +18,7 @@ WildRydes.map = WildRydes.map || {};
         Graphic, Point, TextSymbol,
         PictureMarkerSymbol, webMercatorUtils
     ) {
-        var wrMap = WildRydes.map;
+        var drMap = GDronez.map;
 
         var map = new Map({ basemap: 'gray-vector' });
 
@@ -38,17 +38,17 @@ WildRydes.map = WildRydes.map || {};
             }
         });
 
-        var unicornSymbol = new PictureMarkerSymbol({
-            url: '/images/unicorn-icon.png',
+        var droneSymbol = new PictureMarkerSymbol({
+            url: '/images/drone-icon.png',
             width: '25px',
             height: '25px'
         });
 
         var pinGraphic;
-        var unicornGraphic;
+        var droneGraphic;
 
         function updateCenter(newValue) {
-            wrMap.center = {
+            drMap.center = {
                 latitude: newValue.latitude,
                 longitude: newValue.longitude
             };
@@ -57,7 +57,7 @@ WildRydes.map = WildRydes.map || {};
         function updateExtent(newValue) {
             var min = webMercatorUtils.xyToLngLat(newValue.xmin, newValue.ymin);
             var max = webMercatorUtils.xyToLngLat(newValue.xmax, newValue.ymax);
-            wrMap.extent = {
+            drMap.extent = {
                 minLng: min[0],
                 minLat: min[1],
                 maxLng: max[0],
@@ -73,17 +73,17 @@ WildRydes.map = WildRydes.map || {};
         });
 
         view.on('click', function handleViewClick(event) {
-            wrMap.selectedPoint = event.mapPoint;
+            drMap.selectedPoint = event.mapPoint;
             view.graphics.remove(pinGraphic);
             pinGraphic = new Graphic({
                 symbol: pinSymbol,
-                geometry: wrMap.selectedPoint
+                geometry: drMap.selectedPoint
             });
             view.graphics.add(pinGraphic);
-            $(wrMap).trigger('pickupChange');
+            $(drMap).trigger('pickupChange');
         });
 
-        wrMap.animate = function animate(origin, dest, callback) {
+        drMap.animate = function animate(origin, dest, callback) {
             var startTime;
             var step = function animateFrame(timestamp) {
                 var progress;
@@ -100,12 +100,12 @@ WildRydes.map = WildRydes.map || {};
                     longitude: origin.longitude + deltaLon,
                     latitude: origin.latitude + deltaLat
                 });
-                view.graphics.remove(unicornGraphic);
-                unicornGraphic = new Graphic({
+                view.graphics.remove(droneGraphic);
+                droneGraphic = new Graphic({
                     geometry: point,
-                    symbol: unicornSymbol
+                    symbol: droneSymbol
                 });
-                view.graphics.add(unicornGraphic);
+                view.graphics.add(droneGraphic);
                 if (progressPct < 1) {
                     requestAnimationFrame(step);
                 } else {
@@ -115,8 +115,9 @@ WildRydes.map = WildRydes.map || {};
             requestAnimationFrame(step);
         };
 
-        wrMap.unsetLocation = function unsetLocation() {
+        drMap.unsetLocation = function unsetLocation() {
             view.graphics.remove(pinGraphic);
         };
     });
 }(jQuery));
+
