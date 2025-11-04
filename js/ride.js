@@ -1,11 +1,11 @@
-/*global WildRydes _config*/
+/*global GDronez _config*/
 
-var WildRydes = window.WildRydes || {};
-WildRydes.map = WildRydes.map || {};
+var GDronez = window.GDronez || {};
+GDronez.map = GDronez.map || {};
 
 (function rideScopeWrapper($) {
     var authToken;
-    WildRydes.authToken.then(function setAuthToken(token) {
+    GDronez.authToken.then(function setAuthToken(token) {
         if (token) {
             authToken = token;
         } else {
@@ -15,10 +15,10 @@ WildRydes.map = WildRydes.map || {};
         alert(error);
         window.location.href = '/signin.html';
     });
-    function requestUnicorn(pickupLocation) {
+    function requestDrone(pickupLocation) {
         $.ajax({
             method: 'POST',
-            url: _config.api.invokeUrl + '/ride',
+            url: _config.api.invokeUrl + '/flight',
             headers: {
                 Authorization: authToken
             },
@@ -33,21 +33,19 @@ WildRydes.map = WildRydes.map || {};
             error: function ajaxError(jqXHR, textStatus, errorThrown) {
                 console.error('Error requesting ride: ', textStatus, ', Details: ', errorThrown);
                 console.error('Response: ', jqXHR.responseText);
-                alert('An error occured when requesting your unicorn:\n' + jqXHR.responseText);
+                alert('An error occured when requesting your drone:\n' + jqXHR.responseText);
             }
         });
     }
 
     function completeRequest(result) {
-        var unicorn;
-        var pronoun;
+        var drone;
         console.log('Response received from API: ', result);
-        unicorn = result.Unicorn;
-        pronoun = unicorn.Gender === 'Male' ? 'his' : 'her';
-        displayUpdate(unicorn.Name + ', your ' + unicorn.Color + ' unicorn, is on ' + pronoun + ' way.');
+        drone = result.Drone;
+        displayUpdate(drone.Name + ', your ' + drone.Color + ' drone, is coming');
         animateArrival(function animateCallback() {
-            displayUpdate(unicorn.Name + ' has arrived. Giddy up!');
-            WildRydes.map.unsetLocation();
+            displayUpdate(drone.Name + ' has arrived. Get flying!');
+            GDronez.map.unsetLocation();
             $('#request').prop('disabled', 'disabled');
             $('#request').text('Set Pickup');
         });
@@ -56,9 +54,9 @@ WildRydes.map = WildRydes.map || {};
     // Register click handler for #request button
     $(function onDocReady() {
         $('#request').click(handleRequestClick);
-        $(WildRydes.map).on('pickupChange', handlePickupChanged);
+        $(GDronez.map).on('pickupChange', handlePickupChanged);
 
-        WildRydes.authToken.then(function updateAuthMessage(token) {
+        GDronez.authToken.then(function updateAuthMessage(token) {
             if (token) {
                 displayUpdate('You are authenticated. Click to see your <a href="#authTokenModal" data-toggle="modal">auth token</a>.');
                 $('.authToken').text(token);
@@ -72,36 +70,37 @@ WildRydes.map = WildRydes.map || {};
 
     function handlePickupChanged() {
         var requestButton = $('#request');
-        requestButton.text('Request Unicorn');
+        requestButton.text('Request Drone');
         requestButton.prop('disabled', false);
     }
 
     function handleRequestClick(event) {
-        var pickupLocation = WildRydes.map.selectedPoint;
+        var pickupLocation = GDronez.map.selectedPoint;
         event.preventDefault();
-        requestUnicorn(pickupLocation);
+        requestDrone(pickupLocation);
     }
 
     function animateArrival(callback) {
-        var dest = WildRydes.map.selectedPoint;
+        var dest = GDronez.map.selectedPoint;
         var origin = {};
 
-        if (dest.latitude > WildRydes.map.center.latitude) {
-            origin.latitude = WildRydes.map.extent.minLat;
+        if (dest.latitude > GDronez.map.center.latitude) {
+            origin.latitude = GDronez.map.extent.minLat;
         } else {
-            origin.latitude = WildRydes.map.extent.maxLat;
+            origin.latitude = GDronez.map.extent.maxLat;
         }
 
-        if (dest.longitude > WildRydes.map.center.longitude) {
-            origin.longitude = WildRydes.map.extent.minLng;
+        if (dest.longitude > GDronez.map.center.longitude) {
+            origin.longitude = GDronez.map.extent.minLng;
         } else {
-            origin.longitude = WildRydes.map.extent.maxLng;
+            origin.longitude = GDronez.map.extent.maxLng;
         }
 
-        WildRydes.map.animate(origin, dest, callback);
+        GDronez.map.animate(origin, dest, callback);
     }
 
     function displayUpdate(text) {
         $('#updates').append($('<li>' + text + '</li>'));
     }
 }(jQuery));
+
